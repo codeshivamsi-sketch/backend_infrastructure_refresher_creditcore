@@ -1,0 +1,51 @@
+from fastapi import APIRouter, HTTPException, Depends
+from database import AsyncSessionLocal
+from models import LoanApplication, LoanStatus
+from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+
+router = APIRouter()
+
+class LoanApplicationRequest(BaseModel):
+    customer_id: str
+    amount: float
+    purpose: str
+
+async def get_db():
+    async with AsyncSessionLocal() as session:
+        yield session
+
+@router.post("/applications")
+async def create_application(request: LoanApplicationRequest, db: AsyncSession = Depends(get_db)):
+    application = LoanApplication(
+        customer_id = request.customer_id,
+        amount = request.amount,
+        purpose = request.purpose,
+        status = LoanStatus.DRAFT
+    )
+    db.add(application)
+    await db.commit()
+    await db.refresh(application)
+    return application
+
+@router.get("/applications/{app_id}")
+async def get_application(app_id: str, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(LoanApplication).where(LoanApplication.id == app_id))
+    application = result.scalar_one_or_none()
+    if not application:
+        raise HTTPException(status_code=404, detail="Application not found")
+    return application
+
+@router.patch("/applications/{app_id}/submit")
+async def submit_application(app_id: str, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(LoanApplication).where(LoanApplication.id == app_id))
+    application = result.scalar_one_or_none()
+    if not application:
+        raise HTTPException(status_code=404, detail="Application not found")
+    if application.status != LoanStatus.DRAFT:
+        raise HTTPException(status_code=400, detail="Only draft application can be submitted")
+    application.status = LoanStatus.SUBMITTED
+    await db.commit()
+    await db.refresh(application)
+    return application
