@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Header
 from database import AsyncSessionLocal
 from models import LoanApplication, LoanStatus
 from pydantic import BaseModel
@@ -17,12 +17,26 @@ async def get_db():
         yield session
 
 @router.post("/applications")
-async def create_application(request: LoanApplicationRequest, db: AsyncSession = Depends(get_db)):
+async def create_application(
+    request: LoanApplicationRequest, 
+    db: AsyncSession = Depends(get_db),
+    idempotency_key: str = Header(..., alias="idempotency-key")
+):
+    # Check if we've seen this key before
+    result = await db.execute(
+        select(LoanApplication).where(LoanApplication.idempotency_key == idempotency_key)
+    )
+    existing = result.scalar_one_or_none()
+    if existing:
+        return existing
+
+    # First time seeing this key - create the application
     application = LoanApplication(
         customer_id = request.customer_id,
         amount = request.amount,
         purpose = request.purpose,
-        status = LoanStatus.DRAFT
+        status = LoanStatus.DRAFT,
+        idempotency_key=idempotency_key
     )
     db.add(application)
     await db.commit()
