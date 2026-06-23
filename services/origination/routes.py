@@ -7,6 +7,7 @@ from sqlalchemy import select
 from worker import run_credit_check, celery_app
 from celery.result import AsyncResult
 from kafka_producer import publish_event
+from logger import log
 
 router = APIRouter()
 
@@ -44,6 +45,7 @@ async def create_application(
     db.add(application)
     await db.commit()
     await db.refresh(application)
+    log.info("application_created", loan_id=str(application.id), customer_id=application.customer_id, amount=application.amount)
     return application
 
 @router.get("/applications/{app_id}")

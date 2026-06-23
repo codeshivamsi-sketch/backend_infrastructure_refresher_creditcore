@@ -4,7 +4,7 @@ from base import Base
 
 DATABASE_URL = "postgresql+asyncpg://creditcore:creditcore@localhost:5432/creditcore"
 
-engine = create_async_engine(DATABASE_URL, echo=True)
+engine = create_async_engine(DATABASE_URL, echo=False)
 
 AsyncSessionLocal = sessionmaker(
     engine,
