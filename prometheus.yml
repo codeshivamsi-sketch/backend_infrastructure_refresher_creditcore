@@ -1,0 +1,7 @@
+scrape_configs:
+  - job_name: origination
+    static_configs:
+      - targets: ["origination:8000"]
+  - job_name: ledger
+    static_configs:
+      - targets: ["ledger:8001"]

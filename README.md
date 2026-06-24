@@ -10,6 +10,8 @@ A hands-on refresher on backend engineering: async APIs, microservices, event-dr
 - **Redis + Celery** — async background jobs
 - **Kafka** — event publishing and consumption
 - **structlog** — structured JSON logging
+- **Prometheus** — metrics scraping
+- **Grafana** — metrics visualisation
 - **Docker** — containerised infrastructure
 
 ## Services
@@ -19,14 +21,15 @@ A hands-on refresher on backend engineering: async APIs, microservices, event-dr
 
 ## Architecture
 
+```
 Client → Origination Service → PostgreSQL
+                             → Redis (Celery background jobs)
+                             → Kafka (loan.submitted events)
+                             → Ledger Service → PostgreSQL
 
-→ Redis (Celery background jobs)
-
-→ Kafka (loan.submitted events)
-
-→ Ledger Service → PostgreSQL
-
+Prometheus → scrapes /metrics from Origination + Ledger
+Grafana    → visualises metrics from Prometheus
+```
 
 ## Running Locally
 
@@ -70,3 +73,14 @@ pytest tests/ -v
 | PATCH | `/applications/{id}/submit` | Submit application |
 | GET | `/tasks/{task_id}` | Check credit check job status |
 | GET | `/health` | Health check |
+
+## Observability
+
+Prometheus and Grafana are included in the Docker setup.
+
+| Service | URL |
+|---------|-----|
+| Prometheus | http://localhost:9090 |
+| Grafana | http://localhost:3000 |
+
+Both services expose a `/metrics` endpoint scraped by Prometheus every 15s. Open Grafana, add Prometheus as a datasource (`http://prometheus:9090`), and build dashboards using metrics like `http_requests_total` and `http_request_duration_seconds_bucket`.
