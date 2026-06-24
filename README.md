@@ -1,8 +1,18 @@
 # CreditCore
 
-A hands-on refresher on backend engineering: async APIs, microservices, event-driven architecture, and containerisation, built around a trivial lending domain.
+A minimal project to refresh hands-on familiarity with backend infrastructure: async APIs, microservices, event driven architecture, observability, and containerisation, built around a trivial lending domain. Each technology is wired in just enough to work; none are used in depth.
 
 ## Tech Stack
+
+![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat&logo=fastapi&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat&logo=postgresql&logoColor=white)
+![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat&logo=redis&logoColor=white)
+![Celery](https://img.shields.io/badge/Celery-37814A?style=flat&logo=celery&logoColor=white)
+![Kafka](https://img.shields.io/badge/Kafka-231F20?style=flat&logo=apachekafka&logoColor=white)
+![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?style=flat&logo=prometheus&logoColor=white)
+![Grafana](https://img.shields.io/badge/Grafana-F46800?style=flat&logo=grafana&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)
 
 - **FastAPI** — REST API framework
 - **PostgreSQL** — primary database
@@ -74,6 +84,13 @@ pytest tests/ -v
 | GET | `/tasks/{task_id}` | Check credit check job status |
 | GET | `/health` | Health check |
 
+### Ledger Service
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/postings` | Create debit + credit entry for a loan |
+| GET | `/postings/{loan_id}` | Get all ledger entries for a loan |
+
 ## Observability
 
 Prometheus and Grafana are included in the Docker setup.
@@ -83,4 +100,6 @@ Prometheus and Grafana are included in the Docker setup.
 | Prometheus | http://localhost:9090 |
 | Grafana | http://localhost:3000 |
 
-Both services expose a `/metrics` endpoint scraped by Prometheus every 15s. Open Grafana, add Prometheus as a datasource (`http://prometheus:9090`), and build dashboards using metrics like `http_requests_total` and `http_request_duration_seconds_bucket`.
+Both services expose a /metrics endpoint scraped by Prometheus every 15s. Open Grafana at http://localhost:3000, add Prometheus as a datasource (http://prometheus:9090), and query metrics like http_requests_total for request counts and histogram_quantile(0.90, rate(http_request_duration_seconds_bucket[5m])) for p90 latency.
+
+![Grafana Dashboard](docs/grafana_dashboard.png)
