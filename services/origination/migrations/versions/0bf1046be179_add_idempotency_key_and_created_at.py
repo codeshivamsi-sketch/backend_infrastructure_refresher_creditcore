@@ -24,7 +24,6 @@ def upgrade() -> None:
     op.add_column('loan_applications', sa.Column('idempotency_key', sa.String(), nullable=False))
     op.add_column('loan_applications', sa.Column('created_at', sa.DateTime(timezone=True), nullable=False))
     op.create_unique_constraint(None, 'loan_applications', ['idempotency_key'])
-    op.drop_column('loan_applications', 'status')
     # ### end Alembic commands ###
 
 

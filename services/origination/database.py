@@ -1,8 +1,9 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from base import Base
+import os
 
-DATABASE_URL = "postgresql+asyncpg://creditcore:creditcore@localhost:5432/creditcore"
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://creditcore:creditcore@localhost:5432/creditcore") 
 
 engine = create_async_engine(DATABASE_URL, echo=False)
 

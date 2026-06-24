@@ -30,8 +30,6 @@ def upgrade() -> None:
     sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
-    op.drop_table('alembic_version')
-    op.drop_table('loan_applications')
     # ### end Alembic commands ###
 
 

@@ -7,10 +7,18 @@ from alembic import context
 
 from models import LedgerEntry
 from base import Base
+import os
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
+
+# Read DATABASE_URL from environment if available
+database_url = os.getenv("DATABASE_URL")
+if database_url:
+    # alembic needs psycopg2, not asyncpg
+    database_url = database_url.replace("postgresql+asyncpg", "postgresql+psycopg2")
+    config.set_main_option("sqlalchemy.url", database_url)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
