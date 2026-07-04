@@ -1,4 +1,4 @@
-# CreditCore — Backend Infrastructure Refresher
+# Backend Infrastructure Refresher — CreditCore
 
 A minimal project to refresh hands-on familiarity with backend infrastructure: async APIs, microservices, event driven architecture, observability, and containerisation, built around a trivial lending domain. Each technology is wired in just enough to work; none are used in depth.
 
