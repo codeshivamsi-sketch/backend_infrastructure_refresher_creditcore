@@ -102,6 +102,8 @@ Prometheus and Grafana are included in the Docker setup.
 
 Both services expose a `/metrics` endpoint scraped by Prometheus every 15s. Open Grafana, add Prometheus as a datasource (`http://prometheus:9090`), and build dashboards using metrics like `http_requests_total` and `http_request_duration_seconds_bucket`.
 
+![Grafana Dashboard](docs/graphana_dashboard.png)
+
 ## Build Phases
 
 **Phase 1 — FastAPI + PostgreSQL**
