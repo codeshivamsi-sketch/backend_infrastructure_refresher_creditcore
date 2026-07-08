@@ -155,27 +155,27 @@ Both services expose a /metrics endpoint scraped by Prometheus every 15s. Open G
 
 ## Build Phases
 
-## Phase 1 — FastAPI + PostgreSQL
+### Phase 1 — FastAPI + PostgreSQL
 Set up the Origination service with FastAPI. Defined the `LoanApplication` model with SQLAlchemy ORM, wired up an async PostgreSQL connection with `asyncpg`, and built CRUD endpoints for creating and fetching loan applications.
 
-## Phase 2 — Alembic Migrations
+### Phase 2 — Alembic Migrations
 Introduced Alembic for schema versioning. Migration scripts handle table creation and column changes, keeping the database schema in sync across environments without manual SQL.
 
-## Phase 3 — Idempotency
+### Phase 3 — Idempotency
 Added idempotency key support on the `POST /applications` endpoint. Duplicate requests with the same key return the original response instead of creating a new record — a standard pattern for safe retries in payment and lending systems.
 
-## Phase 4 — Celery + Redis
+### Phase 4 — Celery + Redis
 Wired up Redis as a task broker and Celery as a worker. Submitting a loan application enqueues an async credit check job. The worker processes it in the background and updates the application status — decoupling slow operations from the request lifecycle.
 
-## Phase 5 — Kafka
+### Phase 5 — Kafka
 Added Kafka (KRaft mode, no Zookeeper) for event-driven communication. Origination publishes a `loan.submitted` event on application submission. Ledger consumes it via an async Kafka consumer running as a background task on startup.
 
-## Phase 6 — Ledger Service
+### Phase 6 — Ledger Service
 Built a second microservice for double-entry bookkeeping. Every loan submission creates a matching debit and credit entry, reflecting standard accounting practice. Ledger has its own FastAPI app, database, and Alembic migrations — fully independent of Origination.
 
-## Phase 7 — Docker
+### Phase 7 — Docker
 Containerised all services with individual Dockerfiles. `docker-compose.yml` orchestrates Origination, Ledger, Celery worker, PostgreSQL, Redis, and Kafka with healthchecks and dependency ordering. A `Makefile` wraps common commands (`make up`, `make down`, `make logs`).
 
-## Phase 8 — Observability
+### Phase 8 — Observability
 Added `prometheus-fastapi-instrumentator` to both services to expose a `/metrics` endpoint. Prometheus scrapes metrics every 15s. Grafana visualises request rate, p90 latency, and error rates per endpoint — giving production-style visibility into the running system.
 
