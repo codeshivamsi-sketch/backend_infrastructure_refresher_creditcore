@@ -78,17 +78,6 @@ flowchart TD
 - **Origination** (port 8000) — loan application lifecycle, idempotency, credit check jobs
 - **Ledger** (port 8001) — double-entry bookkeeping for financial records
 
-## Architecture
-
-```
-Client → Origination Service → PostgreSQL
-                             → Redis (Celery background jobs)
-                             → Kafka (loan.submitted events)
-                             → Ledger Service → PostgreSQL
-
-Prometheus → scrapes /metrics from Origination + Ledger
-Grafana    → visualises metrics from Prometheus
-```
 
 ## Running Locally
 
