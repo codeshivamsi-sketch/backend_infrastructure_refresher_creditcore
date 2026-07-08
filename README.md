@@ -2,8 +2,6 @@
 
 A minimal project to refresh hands-on familiarity with backend infrastructure: async APIs, microservices, event driven architecture, observability, and containerisation, built around a trivial lending domain. Each technology is wired in just enough to work; none are used in depth.
 
-## Tech Stack
-
 ![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat&logo=fastapi&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat&logo=postgresql&logoColor=white)
@@ -13,6 +11,57 @@ A minimal project to refresh hands-on familiarity with backend infrastructure: a
 ![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?style=flat&logo=prometheus&logoColor=white)
 ![Grafana](https://img.shields.io/badge/Grafana-F46800?style=flat&logo=grafana&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)
+
+## Architecture Overview
+
+```mermaid
+flowchart TD
+    Client(["Client\nHTTP / curl"])
+    pytest(["pytest\nasync tests · httpx"])
+
+    subgraph Docker ["Docker Compose"]
+        subgraph Services ["Services"]
+            Orig["Origination\nFastAPI · port 8000\nSQLAlchemy · structlog"]
+            Ledger["Ledger\nFastAPI · port 8001\nDouble-entry bookkeeping"]
+        end
+
+        subgraph Messaging ["Async / Events"]
+            Kafka[/"Kafka\nKRaft · port 9092\ntopic: loan.submitted"/]
+            Redis[("Redis\nport 6379 · broker")]
+            Celery["Celery Worker\ncredit check jobs"]
+        end
+
+        subgraph Data ["Data"]
+            PG[("PostgreSQL\nport 5432\nAlembic migrations")]
+        end
+
+        subgraph Observability ["Observability"]
+            Prom["Prometheus\nport 9090\nscrapes /metrics"]
+            Grafana["Grafana\nport 3000\np90 · request rate"]
+        end
+    end
+
+    Client -->|HTTP| Orig
+    Client -->|HTTP| Ledger
+
+    Orig -->|publishes loan.submitted| Kafka
+    Kafka -.->|consumes| Ledger
+
+    Orig -->|SQL| PG
+    Ledger -->|SQL| PG
+
+    Orig -->|enqueue task| Redis
+    Redis --> Celery
+    Celery -.->|writes result| PG
+
+    Prom -.->|scrapes /metrics| Orig
+    Prom -.->|scrapes /metrics| Ledger
+    Prom --> Grafana
+
+    pytest -.->|async tests| Orig
+```
+
+## Tech Stack
 
 - **FastAPI** — REST API framework
 - **PostgreSQL** — primary database
